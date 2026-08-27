@@ -2384,3 +2384,207 @@ footer{border-top:1px solid #ffffff0d;background:#03060a;padding:60px 0 0}
   .contactFormGrid { grid-template-columns: 1fr; }
   .contactFormBox, .contactMapBox, .contactHoursCard { padding: 18px 16px; }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   EMPRESAS CLIENTES
+   ══════════════════════════════════════════════════════════════ */
+.companiesMain { padding: 110px 0 80px; position: relative; z-index: 2; }
+.companiesHead { margin-bottom: 28px; }
+.companiesHead h1 {
+  font-size: 40px; font-weight: 800; letter-spacing: -0.03em; margin: 6px 0 8px;
+}
+.companiesHead > p { color: var(--text2); max-width: 620px; margin: 0 0 22px; }
+
+.companiesToolbar {
+  display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
+}
+.companiesSearch {
+  display: flex; align-items: center; gap: 10px; flex: 1; min-width: 260px;
+  background: var(--search-bg); border: 1px solid var(--border);
+  border-radius: 11px; padding: 11px 14px; color: var(--text3);
+}
+.companiesSearch input {
+  flex: 1; background: 0; border: 0; outline: 0; color: var(--text); font-size: 14px;
+}
+.companiesFilters { display: flex; gap: 8px; flex-wrap: wrap; }
+.companiesFilter {
+  background: transparent; border: 1px solid var(--border); color: var(--text2);
+  border-radius: 999px; padding: 8px 15px; font-size: 12.5px; font-weight: 600;
+  cursor: pointer; transition: all .18s;
+}
+.companiesFilter:hover { border-color: #3c9dff55; color: var(--text); }
+.companiesFilter.active {
+  background: #3c9dff18; border-color: #3c9dff55; color: #5ee8ff;
+}
+
+.companyGrid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px;
+}
+.companyCard {
+  text-align: left; cursor: pointer; display: flex; flex-direction: column; gap: 8px;
+  background: var(--card-bg); border: 1px solid var(--border);
+  border-radius: 14px; padding: 18px; transition: transform .18s, border-color .18s;
+}
+.companyCard:hover {
+  transform: translateY(-3px); border-color: var(--company-color);
+}
+.companyCardTop { display: flex; align-items: center; justify-content: space-between; }
+.companyAvatar {
+  width: 46px; height: 46px; border-radius: 12px; display: flex;
+  align-items: center; justify-content: center; font-weight: 800; font-size: 15px;
+  overflow: hidden;
+}
+.companyAvatar img { width: 100%; height: 100%; object-fit: contain; }
+.companyAvatar--lg { width: 72px; height: 72px; border-radius: 16px; font-size: 22px; }
+.companyStatus {
+  font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 999px;
+  text-transform: uppercase; letter-spacing: .04em;
+}
+.companyCardName { font-size: 17px; font-weight: 700; margin: 4px 0 0; color: var(--text); }
+.companyCardSegment { font-size: 12.5px; color: var(--text3); margin: 0; }
+.companyCardSummary {
+  font-size: 13px; color: var(--text2); margin: 4px 0 0; line-height: 1.5;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.companyCardFoot {
+  display: flex; align-items: center; gap: 12px; margin-top: 10px;
+  padding-top: 12px; border-top: 1px solid var(--border);
+  font-size: 11.5px; color: var(--text3);
+}
+.companyCardFoot span { display: inline-flex; align-items: center; gap: 5px; }
+.companyCardSp { color: var(--company-color); font-weight: 600; }
+.companyCardArrow { margin-left: auto; color: var(--company-color); }
+
+/* ── Detalhe ── */
+.companyBack {
+  background: transparent; border: 0; color: var(--text2); cursor: pointer;
+  display: inline-flex; align-items: center; gap: 7px; font-size: 13px;
+  padding: 0; margin-bottom: 18px;
+}
+.companyBack:hover { color: var(--text); }
+.companyDetailHead { display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap; }
+.companyDetailHeadBody { flex: 1; min-width: 260px; }
+.companyDetailTitleRow { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.companyDetailTitleRow h1 {
+  font-size: 32px; font-weight: 800; letter-spacing: -0.03em; margin: 0;
+}
+.companyDetailLocation {
+  display: inline-flex; align-items: center; gap: 6px;
+  color: var(--text3); font-size: 13px; margin: 8px 0 0;
+}
+.companyDetailSummary { color: var(--text2); margin: 10px 0 0; max-width: 640px; }
+.companySpBtn {
+  display: inline-flex; align-items: center; gap: 8px; margin-top: 16px;
+  background: var(--company-color); color: #04121f; font-weight: 700;
+  border-radius: 10px; padding: 11px 16px; font-size: 13.5px; text-decoration: none;
+}
+.companySpBtn:hover { filter: brightness(1.08); }
+
+.companyFacts {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px; margin: 26px 0;
+}
+.companyFact {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 11px; padding: 12px 14px; display: flex; flex-direction: column; gap: 3px;
+}
+.companyFactLabel {
+  font-size: 10.5px; text-transform: uppercase; letter-spacing: .08em;
+  font-weight: 800; color: var(--text3);
+}
+.companyFactValue { font-size: 13.5px; color: var(--text); font-weight: 600; }
+
+.companyPanels {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px;
+}
+.companyPanel {
+  background: var(--card-bg); border: 1px solid var(--border);
+  border-radius: 14px; padding: 20px;
+}
+.companyPanel h2 {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 15px; font-weight: 800; margin: 0 0 14px; color: var(--text);
+}
+.companyEmptyText { color: var(--text3); font-size: 13px; margin: 0; }
+
+.companyLinkList { display: flex; flex-direction: column; gap: 8px; }
+.companyLink {
+  display: flex; align-items: center; gap: 12px; text-decoration: none;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 10px; padding: 11px 13px; color: var(--text); transition: border-color .18s;
+}
+.companyLink:hover { border-color: var(--link-color); }
+.companyLinkIcon { font-size: 17px; }
+.companyLinkBody { display: flex; flex-direction: column; flex: 1; }
+.companyLinkBody strong { font-size: 13.5px; font-weight: 600; }
+.companyLinkBody small { font-size: 11px; color: var(--text3); }
+
+.companyContactList { display: flex; flex-direction: column; gap: 12px; }
+.companyContact {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 10px; padding: 12px 13px; display: flex; flex-direction: column; gap: 4px;
+}
+.companyContactHead { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.companyContactHead strong { font-size: 14px; }
+.companyContactHead span { font-size: 11.5px; color: var(--text3); }
+.companyContact a {
+  display: inline-flex; align-items: center; gap: 6px;
+  color: var(--text2); font-size: 12.5px; text-decoration: none;
+}
+.companyContact a:hover { color: #5ee8ff; }
+
+.companyEnvList { display: flex; flex-direction: column; gap: 8px; }
+.companyEnvItem {
+  display: flex; gap: 12px; justify-content: space-between;
+  padding: 9px 0; border-bottom: 1px solid var(--border); font-size: 13px;
+}
+.companyEnvItem:last-child { border-bottom: 0; }
+.companyEnvLabel { color: var(--text3); font-weight: 600; }
+.companyEnvValue { color: var(--text); text-align: right; }
+.companyNotes { color: var(--text2); font-size: 13.5px; line-height: 1.6; margin: 0; white-space: pre-line; }
+
+.companiesBackPortal {
+  margin-top: 34px; background: transparent; border: 1px solid var(--border);
+  color: var(--text2); border-radius: 10px; padding: 10px 15px; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 7px; font-size: 13px;
+}
+.companiesBackPortal:hover { color: var(--text); border-color: #3c9dff55; }
+
+@media (max-width: 640px) {
+  .companiesHead h1 { font-size: 30px; }
+  .companyDetailTitleRow h1 { font-size: 24px; }
+  .companyEnvItem { flex-direction: column; gap: 2px; }
+  .companyEnvValue { text-align: left; }
+}
+
+/* ── Admin: empresas ── */
+.adminTable--companies .adminTableHead,
+.adminTable--companies .adminTableRow {
+  grid-template-columns: 1fr 150px 110px 110px 90px;
+}
+.adminModalBox--wide { max-width: 820px; }
+.adminLinkInline {
+  display: inline-flex; align-items: center; gap: 5px;
+  color: #5ee8ff; text-decoration: none; font-size: 12.5px;
+}
+.adminRepeatList { display: flex; flex-direction: column; gap: 8px; }
+.adminRepeatRow { display: flex; gap: 8px; align-items: center; }
+.adminRepeatRow input,
+.adminRepeatRow select { flex: 1; min-width: 0; }
+.adminRepeatRow .adminDanger {
+  background: #ff4d4d12; border: 1px solid #ff4d4d28; color: #ff8080;
+  border-radius: 8px; padding: 8px; line-height: 0; cursor: pointer;
+}
+.adminRepeatAdd { align-self: flex-start; margin-top: 8px; }
+
+@media (max-width: 860px) {
+  .adminTable--companies .adminTableHead,
+  .adminTable--companies .adminTableRow { grid-template-columns: 1fr 90px; }
+  .adminTable--companies .adminTableHead span:nth-child(2),
+  .adminTable--companies .adminTableRow span:nth-child(2),
+  .adminTable--companies .adminTableHead span:nth-child(3),
+  .adminTable--companies .adminTableRow span:nth-child(3),
+  .adminTable--companies .adminTableHead span:nth-child(4),
+  .adminTable--companies .adminTableRow span:nth-child(4) { display: none; }
+  .adminRepeatRow { flex-wrap: wrap; }
+}

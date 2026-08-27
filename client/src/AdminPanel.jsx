@@ -25,7 +25,10 @@ import {
   Megaphone,
   ToggleLeft,
   ToggleRight,
+  Building2,
+  ExternalLink,
 } from "lucide-react";
+import { companyLinkTypes } from "./data.js";
 
 // ─── helpers ──────────────────────────────────────
 function Toast({ msg, type, onClose }) {
@@ -1074,6 +1077,331 @@ function BannersEditor({ banners, onChange, toast }) {
   );
 }
 
+// ─── CompaniesEditor ──────────────────────────────
+const COMPANY_STATUS = [
+  { id: "ativo",    label: "Ativo" },
+  { id: "prospect", label: "Prospect" },
+  { id: "inativo",  label: "Inativo" },
+];
+
+function slugify(text) {
+  return text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
+
+function emptyCompany() {
+  return {
+    id: "",
+    name: "",
+    segment: "",
+    city: "",
+    cnpj: "",
+    since: "",
+    contract: "",
+    status: "ativo",
+    color: "#3c9dff",
+    sharepoint: "",
+    summary: "",
+    contacts: [],
+    environment: [],
+    links: [],
+    notes: "",
+  };
+}
+
+// Editor genérico de listas de objetos (contatos, ambiente, links)
+function RepeatableList({ label, items, fields, onChange, addLabel }) {
+  function update(i, key, value) {
+    onChange(items.map((item, idx) => (idx === i ? { ...item, [key]: value } : item)));
+  }
+  function add() {
+    onChange([...items, Object.fromEntries(fields.map((f) => [f.key, f.default ?? ""]))]);
+  }
+  function remove(i) {
+    onChange(items.filter((_, idx) => idx !== i));
+  }
+
+  return (
+    <div className="adminField" style={{ gridColumn: "1 / -1" }}>
+      <label>{label}</label>
+      <div className="adminRepeatList">
+        {items.map((item, i) => (
+          <div className="adminRepeatRow" key={i}>
+            {fields.map((f) =>
+              f.options ? (
+                <select
+                  key={f.key}
+                  value={item[f.key] || f.options[0].id}
+                  onChange={(e) => update(i, f.key, e.target.value)}
+                >
+                  {f.options.map((o) => (
+                    <option key={o.id} value={o.id}>{o.label}</option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  key={f.key}
+                  value={item[f.key] || ""}
+                  placeholder={f.placeholder}
+                  onChange={(e) => update(i, f.key, e.target.value)}
+                />
+              )
+            )}
+            <button className="adminDanger" onClick={() => remove(i)} title="Remover">
+              <Trash2 size={14} />
+            </button>
+          </div>
+        ))}
+      </div>
+      <button className="adminBtnSecondary adminRepeatAdd" onClick={add}>
+        <Plus size={14} /> {addLabel}
+      </button>
+    </div>
+  );
+}
+
+function CompaniesEditor({ companies, onChange, toast }) {
+  const [editing, setEditing] = useState(null);
+  const [form, setForm] = useState({});
+
+  function startEdit(i) {
+    setEditing(i);
+    setForm(i === "new" ? emptyCompany() : { ...companies[i] });
+  }
+
+  function set(key, value) {
+    setForm((p) => ({ ...p, [key]: value }));
+  }
+
+  function save() {
+    if (!form.name.trim()) return toast.show("O nome da empresa é obrigatório.", "error");
+    const id = form.id?.trim() || slugify(form.name);
+    if (editing === "new" && companies.find((c) => c.id === id))
+      return toast.show("Já existe uma empresa com este identificador.", "error");
+
+    const company = { ...form, id };
+    // Mantém o link do SharePoint sempre presente na lista de documentos
+    if (company.sharepoint) {
+      const links = company.links || [];
+      company.links = links.find((l) => l.url === company.sharepoint)
+        ? links
+        : [{ label: "Pasta no SharePoint", url: company.sharepoint, type: "sharepoint" }, ...links];
+    }
+
+    onChange(editing === "new" ? [...companies, company] : companies.map((c, i) => (i === editing ? company : c)));
+    setEditing(null);
+    toast.show("Empresa salva!");
+  }
+
+  function remove(i) {
+    if (!confirm(`Remover a empresa "${companies[i].name}"? A documentação cadastrada será perdida.`)) return;
+    onChange(companies.filter((_, idx) => idx !== i));
+    toast.show("Empresa removida.");
+  }
+
+  return (
+    <div className="adminSection">
+      <div className="adminSectionHeader">
+        <h2 className="adminSectionTitle">Empresas</h2>
+        <button className="adminBtnPrimary" onClick={() => startEdit("new")}>
+          <Plus size={15} /> Nova empresa
+        </button>
+      </div>
+
+      <p className="adminMuted" style={{ marginBottom: 16, fontSize: 13 }}>
+        Centralize aqui a documentação de cada cliente: link do SharePoint, contatos, ambiente de TI e
+        observações. A aba <b>Empresas</b> do portal é visível apenas para quem está autenticado no ADM.
+      </p>
+
+      {companies.length === 0 && (
+        <div className="adminEmpty">
+          <Building2 size={28} />
+          <p>Nenhuma empresa cadastrada.</p>
+        </div>
+      )}
+
+      <div className="adminTable adminTable--companies">
+        {companies.length > 0 && (
+          <div className="adminTableHead">
+            <span>Empresa</span>
+            <span>Segmento</span>
+            <span>SharePoint</span>
+            <span>Documentos</span>
+            <span>Ações</span>
+          </div>
+        )}
+        {companies.map((c, i) => (
+          <div className="adminTableRow" key={c.id}>
+            <span>
+              <b>{c.name}</b>
+              <br />
+              <small>{c.id}</small>
+            </span>
+            <span className="adminMuted">{c.segment || "—"}</span>
+            <span>
+              {c.sharepoint ? (
+                <a href={c.sharepoint} target="_blank" rel="noopener noreferrer" className="adminLinkInline">
+                  Abrir <ExternalLink size={12} />
+                </a>
+              ) : (
+                <span className="adminMuted">—</span>
+              )}
+            </span>
+            <span className="adminMuted">{(c.links || []).filter((l) => l.url).length}</span>
+            <span className="adminActions">
+              <button onClick={() => startEdit(i)} title="Editar">
+                <Pencil size={14} />
+              </button>
+              <button onClick={() => remove(i)} title="Remover" className="adminDanger">
+                <Trash2 size={14} />
+              </button>
+            </span>
+          </div>
+        ))}
+      </div>
+
+      {editing !== null && (
+        <div className="adminModal">
+          <div className="adminModalBox adminModalBox--wide">
+            <div className="adminModalHeader">
+              <h3>{editing === "new" ? "Nova empresa" : "Editar empresa"}</h3>
+              <button onClick={() => setEditing(null)}>
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="adminFieldGrid">
+              <div className="adminField">
+                <label>Nome da empresa</label>
+                <input value={form.name || ""} onChange={(e) => set("name", e.target.value)} />
+              </div>
+              <div className="adminField">
+                <label>Identificador (gerado a partir do nome)</label>
+                <input
+                  value={form.id || ""}
+                  placeholder={form.name ? slugify(form.name) : "empresa-exemplo"}
+                  onChange={(e) => set("id", slugify(e.target.value))}
+                  disabled={editing !== "new"}
+                />
+              </div>
+              <div className="adminField">
+                <label>Segmento</label>
+                <input value={form.segment || ""} onChange={(e) => set("segment", e.target.value)} />
+              </div>
+              <div className="adminField">
+                <label>Cidade / UF</label>
+                <input value={form.city || ""} onChange={(e) => set("city", e.target.value)} />
+              </div>
+              <div className="adminField">
+                <label>CNPJ</label>
+                <input value={form.cnpj || ""} onChange={(e) => set("cnpj", e.target.value)} />
+              </div>
+              <div className="adminField">
+                <label>Cliente desde</label>
+                <input value={form.since || ""} onChange={(e) => set("since", e.target.value)} />
+              </div>
+              <div className="adminField">
+                <label>Contrato</label>
+                <input value={form.contract || ""} onChange={(e) => set("contract", e.target.value)} />
+              </div>
+              <div className="adminField">
+                <label>Status</label>
+                <select value={form.status || "ativo"} onChange={(e) => set("status", e.target.value)}>
+                  {COMPANY_STATUS.map((s) => (
+                    <option key={s.id} value={s.id}>{s.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="adminField">
+                <label>Cor de destaque</label>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <input
+                    type="color"
+                    value={form.color || "#3c9dff"}
+                    onChange={(e) => set("color", e.target.value)}
+                    style={{ width: 44, padding: 2, height: 40 }}
+                  />
+                  <input value={form.color || ""} onChange={(e) => set("color", e.target.value)} />
+                </div>
+              </div>
+              <div className="adminField">
+                <label>Logo (URL, opcional)</label>
+                <input value={form.logo || ""} onChange={(e) => set("logo", e.target.value)} />
+              </div>
+              <div className="adminField" style={{ gridColumn: "1 / -1" }}>
+                <label>Site do SharePoint da empresa</label>
+                <input
+                  value={form.sharepoint || ""}
+                  placeholder="https://suaempresa.sharepoint.com/sites/cliente"
+                  onChange={(e) => set("sharepoint", e.target.value)}
+                />
+              </div>
+              <div className="adminField" style={{ gridColumn: "1 / -1" }}>
+                <label>Resumo</label>
+                <textarea rows={2} value={form.summary || ""} onChange={(e) => set("summary", e.target.value)} />
+              </div>
+
+              <RepeatableList
+                label="Contatos"
+                items={form.contacts || []}
+                onChange={(v) => set("contacts", v)}
+                addLabel="Adicionar contato"
+                fields={[
+                  { key: "name", placeholder: "Nome" },
+                  { key: "role", placeholder: "Cargo" },
+                  { key: "email", placeholder: "E-mail" },
+                  { key: "phone", placeholder: "Telefone" },
+                ]}
+              />
+
+              <RepeatableList
+                label="Ambiente e infraestrutura"
+                items={form.environment || []}
+                onChange={(v) => set("environment", v)}
+                addLabel="Adicionar item"
+                fields={[
+                  { key: "label", placeholder: "Item (ex: Servidores)" },
+                  { key: "value", placeholder: "Descrição" },
+                ]}
+              />
+
+              <RepeatableList
+                label="Documentos e links"
+                items={form.links || []}
+                onChange={(v) => set("links", v)}
+                addLabel="Adicionar documento"
+                fields={[
+                  { key: "label", placeholder: "Título" },
+                  { key: "url", placeholder: "https://..." },
+                  { key: "type", options: companyLinkTypes, default: "documento" },
+                ]}
+              />
+
+              <div className="adminField" style={{ gridColumn: "1 / -1" }}>
+                <label>Observações</label>
+                <textarea rows={3} value={form.notes || ""} onChange={(e) => set("notes", e.target.value)} />
+              </div>
+            </div>
+
+            <div className="adminModalFooter">
+              <button className="adminBtnSecondary" onClick={() => setEditing(null)}>
+                Cancelar
+              </button>
+              <button className="adminBtnPrimary" onClick={save}>
+                <Save size={14} /> Salvar empresa
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── AdminPanel (root) ────────────────────────────
 export default function AdminPanel({
   cats,
@@ -1081,11 +1409,13 @@ export default function AdminPanel({
   videos,
   siteConfig,
   banners,
+  companies,
   onUpdateCats,
   onUpdateArticles,
   onUpdateVideos,
   onUpdateConfig,
   onUpdateBanners,
+  onUpdateCompanies,
   onReset,
   onLogout,
 }) {
@@ -1098,6 +1428,7 @@ export default function AdminPanel({
     { id: "categories", label: "Categorias",      icon: <FolderOpen size={17}/> },
     { id: "videos",     label: "Vídeos",          icon: <Video size={17}/> },
     { id: "banners",    label: "Comunicados",     icon: <Megaphone size={17}/> },
+    { id: "companies",  label: "Empresas",        icon: <Building2 size={17}/> },
     { id: "config",     label: "Configurações",   icon: <Settings size={17}/> },
   ];
 
@@ -1126,6 +1457,9 @@ export default function AdminPanel({
         <div className="adminSidebarFooter">
           <a href="#/" className="adminNavItem">
             <Eye size={17} /> Ver portal
+          </a>
+          <a href="#/empresas" className="adminNavItem">
+            <Building2 size={17} /> Ver empresas
           </a>
           <button className="adminNavItem adminNavLogout" onClick={onLogout}>
             <LogOut size={17} /> Sair
@@ -1180,6 +1514,13 @@ export default function AdminPanel({
             <BannersEditor
               banners={banners || []}
               onChange={onUpdateBanners}
+              toast={{ show: showToast }}
+            />
+          )}
+          {tab === "companies" && (
+            <CompaniesEditor
+              companies={companies || []}
+              onChange={onUpdateCompanies}
               toast={{ show: showToast }}
             />
           )}

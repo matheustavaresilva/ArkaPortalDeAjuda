@@ -14,11 +14,13 @@ import {
   videos as initialVideos,
   articles as initialArticles,
   siteConfig as initialConfig,
+  companies as initialCompanies,
   DATA_VERSION,
 } from "./data.js";
 import AdminLogin from "./AdminLogin.jsx";
 import AdminPanel from "./AdminPanel.jsx";
 import ContactPage from "./ContactPage.jsx";
+import CompaniesPage from "./CompaniesPage.jsx";
 
 // ─── Hash router ──────────────────────────────────────────────────────────────
 function useHashRoute() {
@@ -41,6 +43,7 @@ const LS_KEYS = {
   theme:     "arka_theme",
   ratings:   "arka_ratings",
   banners:   "arka_banners",
+  companies: "arka_companies",
 };
 
 function persist(key, value) {
@@ -84,23 +87,35 @@ function loadOrMerge() {
       try { storedConfig = JSON.parse(localStorage.getItem(LS_KEYS.config) || "null"); } catch {}
       const config = storedConfig || initialConfig;
 
+      let storedCompanies = null;
+      try { storedCompanies = JSON.parse(localStorage.getItem(LS_KEYS.companies) || "null"); } catch {}
+      const companies = storedCompanies || initialCompanies;
+
       persist(LS_KEYS.cats, mergedCats);
       persist(LS_KEYS.articles, mergedArticles);
       persist(LS_KEYS.videos, mergedVideos);
       persist(LS_KEYS.config, config);
+      persist(LS_KEYS.companies, companies);
       localStorage.setItem(LS_KEYS.version, String(DATA_VERSION));
 
-      return { cats: mergedCats, articles: mergedArticles, videos: mergedVideos, config };
+      return { cats: mergedCats, articles: mergedArticles, videos: mergedVideos, config, companies };
     }
 
+    let companies = initialCompanies;
+    try { companies = JSON.parse(localStorage.getItem(LS_KEYS.companies)) || initialCompanies; } catch {}
+
     return {
-      cats:     JSON.parse(localStorage.getItem(LS_KEYS.cats)),
-      articles: JSON.parse(localStorage.getItem(LS_KEYS.articles)),
-      videos:   JSON.parse(localStorage.getItem(LS_KEYS.videos)),
-      config:   JSON.parse(localStorage.getItem(LS_KEYS.config)),
+      cats:      JSON.parse(localStorage.getItem(LS_KEYS.cats)),
+      articles:  JSON.parse(localStorage.getItem(LS_KEYS.articles)),
+      videos:    JSON.parse(localStorage.getItem(LS_KEYS.videos)),
+      config:    JSON.parse(localStorage.getItem(LS_KEYS.config)),
+      companies,
     };
   } catch {
-    return { cats: initialCats, articles: initialArticles, videos: initialVideos, config: initialConfig };
+    return {
+      cats: initialCats, articles: initialArticles, videos: initialVideos,
+      config: initialConfig, companies: initialCompanies,
+    };
   }
 }
 
@@ -207,6 +222,7 @@ function Root() {
   const [articles,   setArticlesState]= useState(initial.articles);
   const [videos,     setVideosState]  = useState(initial.videos);
   const [siteConfig, setConfigState]  = useState(initial.config);
+  const [companies,  setCompaniesState] = useState(initial.companies);
 
   // Banners: array de { id, text, type:"info"|"warning"|"success", active }
   const [banners, setBannersState] = useState(() => {
@@ -218,12 +234,14 @@ function Root() {
   function setVideos(v)     { setVideosState(v);   persist(LS_KEYS.videos,    v); }
   function setSiteConfig(v) { setConfigState(v);   persist(LS_KEYS.config,    v); }
   function setBanners(v)    { setBannersState(v);  persist(LS_KEYS.banners,   v); }
+  function setCompanies(v)  { setCompaniesState(v); persist(LS_KEYS.companies, v); }
 
   function handleReset() {
     setCats(initialCats);
     setArticles(initialArticles);
     setVideos(initialVideos);
     setSiteConfig(initialConfig);
+    setCompanies(initialCompanies);
     localStorage.setItem(LS_KEYS.version, String(DATA_VERSION));
   }
 
@@ -243,11 +261,25 @@ function Root() {
     return (
       <AdminPanel
         cats={cats} articles={articles} videos={videos} siteConfig={siteConfig}
-        banners={banners}
+        banners={banners} companies={companies}
         onUpdateCats={setCats} onUpdateArticles={setArticles}
         onUpdateVideos={setVideos} onUpdateConfig={setSiteConfig}
-        onUpdateBanners={setBanners}
+        onUpdateBanners={setBanners} onUpdateCompanies={setCompanies}
         onReset={handleReset} onLogout={handleLogout}
+      />
+    );
+  }
+
+  // Rota empresas (área interna — exige login do ADM)
+  if (hash === "#/empresas" || hash.startsWith("#/empresas")) {
+    if (!adminAuth) { window.location.hash = "#/admin/login"; return null; }
+    const selectedId = hash.split("/")[2] || null;
+    return (
+      <CompaniesPage
+        companies={companies}
+        selectedId={selectedId}
+        onSelect={(id) => { window.location.hash = id ? `#/empresas/${id}` : "#/empresas"; }}
+        onBack={() => { window.location.hash = "#/"; }}
       />
     );
   }
@@ -522,6 +554,7 @@ function PortalApp({ cats, articles, videos, siteConfig, banners, theme, onToggl
               <a key={x} href={i===0?"#":"#articles"} onClick={() => setMenu(false)}>{x}</a>
             ))}
             <a href="#/contato" onClick={() => setMenu(false)}>Contato</a>
+            <a href="#/empresas" onClick={() => setMenu(false)}>Empresas</a>
           </nav>
           {/* Toggle tema */}
           <button className="themeToggle" onClick={onToggleTheme} aria-label="Alternar tema" title={theme==="dark"?"Modo claro":"Modo escuro"}>
@@ -671,6 +704,7 @@ function PortalApp({ cats, articles, videos, siteConfig, banners, theme, onToggl
           <div>
             <h4>SUPORTE</h4>
             <a href="#articles">Problemas comuns</a>
+            <a href="#/empresas">Empresas clientes</a>
             <button onClick={() => setTicket(true)}>Abrir chamado</button>
             <button onClick={() => setTicket(true)}>Falar com a Arka</button>
           </div>

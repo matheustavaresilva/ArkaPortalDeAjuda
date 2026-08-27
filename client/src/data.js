@@ -3,7 +3,7 @@
 // ─────────────────────────────────────────────
 // DATA_VERSION: incremente sempre que adicionar itens novos em cats/articles/videos
 // Isso força o merge automático com o localStorage na próxima carga.
-export const DATA_VERSION = 3;
+export const DATA_VERSION = 4;
 
 export const ADMIN_USER = "admin";
 export const ADMIN_PASS = "arka@2026";
@@ -97,6 +97,49 @@ export const cats = [
     desc: "Instalação, configuração, manutenção e troca de bateria",
     icon: "🔋",
     color: "#fb923c",
+  },
+];
+
+// ─────────────────────────────────────────────
+//  Empresas clientes — documentação centralizada
+// ─────────────────────────────────────────────
+// links[].type: "sharepoint" | "documento" | "acesso" | "outro"
+export const companyLinkTypes = [
+  { id: "sharepoint", label: "SharePoint", icon: "📁", color: "#22d3ee" },
+  { id: "documento",  label: "Documento",  icon: "📄", color: "#a855f7" },
+  { id: "acesso",     label: "Acesso",     icon: "🔑", color: "#f59e0b" },
+  { id: "outro",      label: "Outro",      icon: "🔗", color: "#94a3b8" },
+];
+
+export const companies = [
+  {
+    id: "empresa-exemplo",
+    name: "Empresa Exemplo Ltda",
+    segment: "Indústria",
+    city: "Vila Velha — ES",
+    cnpj: "00.000.000/0001-00",
+    since: "2021",
+    contract: "Suporte mensal — 40h",
+    status: "ativo",
+    color: "#3c9dff",
+    sharepoint: "https://arkabrasil.sharepoint.com/sites/empresa-exemplo",
+    summary:
+      "Cliente de suporte mensal. Toda a documentação de infraestrutura e inventário fica no SharePoint.",
+    contacts: [
+      { name: "Contato de TI", role: "Responsável de TI", email: "ti@exemplo.com.br", phone: "(27) 0000-0000" },
+    ],
+    environment: [
+      { label: "Usuários", value: "30" },
+      { label: "Servidores", value: "1 x Windows Server 2019 (AD + arquivos)" },
+      { label: "Antivírus", value: "Bitdefender GravityZone" },
+      { label: "Backup", value: "Veeam — diário, retenção 30 dias" },
+      { label: "VPN", value: "Fortinet SSL-VPN" },
+    ],
+    links: [
+      { label: "Pasta no SharePoint", url: "https://arkabrasil.sharepoint.com/sites/empresa-exemplo", type: "sharepoint" },
+      { label: "Inventário de equipamentos", url: "", type: "documento" },
+    ],
+    notes: "Janela de manutenção: sábados, 08h às 12h.",
   },
 ];
 
