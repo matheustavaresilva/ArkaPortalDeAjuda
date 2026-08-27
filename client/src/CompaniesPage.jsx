@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import {
   Search, Building2, ArrowLeft, ExternalLink, Mail, Phone, User,
   MapPin, FileText, Server, StickyNote, ChevronRight, AlertCircle,
+  Menu, X,
 } from "lucide-react";
 import { companyLinkTypes } from "./data.js";
 
@@ -178,6 +179,7 @@ function CompanyDetail({ company, onBack }) {
 export default function CompaniesPage({ companies, selectedId, onSelect, onBack }) {
   const [q, setQ] = useState("");
   const [status, setStatus] = useState("todos");
+  const [menu, setMenu] = useState(false);
 
   const selected = useMemo(
     () => companies.find(c => c.id === selectedId) || null,
@@ -200,11 +202,14 @@ export default function CompaniesPage({ companies, selectedId, onSelect, onBack 
       <header>
         <div className="nav">
           <div className="brand"><img src="/arka-logo.png" alt="Arka Tecnologia" /></div>
-          <nav>
-            <a href="#/">Portal</a>
-            <a href="#/empresas">Empresas</a>
-            <a href="#/admin">Painel ADM</a>
+          <nav className={menu ? "open" : ""}>
+            <a href="#/" onClick={() => setMenu(false)}>Portal</a>
+            <a href="#/empresas" onClick={() => setMenu(false)}>Empresas</a>
+            <a href="#/admin" onClick={() => setMenu(false)}>Painel ADM</a>
           </nav>
+          <button className="mobileMenu" onClick={() => setMenu(!menu)} aria-label="Menu">
+            {menu ? <X /> : <Menu />}
+          </button>
         </div>
       </header>
 
